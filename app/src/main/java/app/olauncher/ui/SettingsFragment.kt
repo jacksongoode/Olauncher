@@ -75,6 +75,8 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         populateWallpaperText()
         populateAppThemeText()
         populateTextSize()
+        populateEinkModeOptimizationStatus()
+        populateBoldTextStatus()
         populateAlignment()
         populateStatusBar()
         populateDateTime()
@@ -120,6 +122,8 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             R.id.themeDark -> updateTheme(AppCompatDelegate.MODE_NIGHT_YES)
             R.id.themeSystem -> updateTheme(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
             R.id.textSizeValue -> binding.textSizesLayout.visibility = View.VISIBLE
+            R.id.disableAnimations -> toggleEinkModeOptimization()
+            R.id.boldText -> toggleBoldText()
             R.id.actionAccessibility -> openAccessibilityService()
             R.id.closeAccessibility -> toggleAccessibilityVisibility(false)
             R.id.notWorking -> requireContext().openUrl(Constants.URL_DOUBLE_TAP)
@@ -222,6 +226,8 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.themeDark.setOnClickListener(this)
         binding.themeSystem.setOnClickListener(this)
         binding.textSizeValue.setOnClickListener(this)
+        binding.disableAnimations?.setOnClickListener(this)
+        binding.boldText?.setOnClickListener(this)
         binding.actionAccessibility.setOnClickListener(this)
         binding.closeAccessibility.setOnClickListener(this)
         binding.notWorking.setOnClickListener(this)
@@ -519,6 +525,26 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             Constants.TextSize.SEVEN -> 7
             else -> "--"
         }.toString()
+    }
+
+    private fun populateEinkModeOptimizationStatus() {
+        binding.disableAnimations?.text = if (prefs.einkModeOptimization) getString(R.string.on) else getString(R.string.off)
+    }
+
+    private fun toggleEinkModeOptimization() {
+        prefs.einkModeOptimization = !prefs.einkModeOptimization
+        populateEinkModeOptimizationStatus()
+    }
+
+    private fun populateBoldTextStatus() {
+        binding.boldText?.text = if (prefs.boldText) getString(R.string.on) else getString(R.string.off)
+    }
+
+    private fun toggleBoldText() {
+        prefs.boldText = !prefs.boldText
+        populateBoldTextStatus()
+        // We need to recreate the activity for the bold text change to take effect in the app drawer
+        requireActivity().recreate()
     }
 
     private fun populateScreenTimeOnOff() {

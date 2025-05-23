@@ -474,6 +474,11 @@ fun Context.getColorFromAttr(
 }
 
 fun View.animateAlpha(alpha: Float = 1.0f) {
+    val prefs = Prefs(context)
+    if (prefs.einkModeOptimization || context.isEinkDisplay()) {
+        this.alpha = alpha
+        return
+    }
     this.animate().apply {
         interpolator = LinearInterpolator()
         duration = 200

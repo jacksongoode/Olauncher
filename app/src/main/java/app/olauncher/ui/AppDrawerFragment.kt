@@ -1,7 +1,9 @@
 package app.olauncher.ui
 
 import android.os.Bundle
+import android.view.GestureDetector
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
@@ -34,6 +36,7 @@ class AppDrawerFragment : Fragment() {
     private lateinit var prefs: Prefs
     private lateinit var adapter: AppDrawerAdapter
     private lateinit var linearLayoutManager: LinearLayoutManager
+    private lateinit var gestureDetector: GestureDetector // Added
 
     private var flag = Constants.FLAG_LAUNCH_APP
     private var canRename = false
@@ -61,6 +64,7 @@ class AppDrawerFragment : Fragment() {
         initViews()
         initSearch()
         initAdapter()
+        initGestureDetector() // Added
         initObservers()
         initClickListeners()
     }
@@ -164,27 +168,102 @@ class AppDrawerFragment : Fragment() {
             }
         )
 
+        val shouldUsePagination = requireContext().isEinkDisplay() || prefs.einkModeOptimization
+
         linearLayoutManager = object : LinearLayoutManager(requireContext()) {
             override fun scrollVerticallyBy(
-                dx: Int,
+                dy: Int,
                 recycler: Recycler,
                 state: RecyclerView.State,
             ): Int {
-                val scrollRange = super.scrollVerticallyBy(dx, recycler, state)
-                val overScroll = dx - scrollRange
-                if (overScroll < -10 && binding.recyclerView.scrollState == RecyclerView.SCROLL_STATE_DRAGGING)
+                if (shouldUsePagination) {
+                    return 0
+                }
+
+                val scrollRange = super.scrollVerticallyBy(dy, recycler, state)
+                val overScroll = dy - scrollRange
+                if (overScroll < -10 && binding.recyclerView.scrollState == RecyclerView.SCROLL_STATE_DRAGGING) {
                     checkMessageAndExit()
+                }
                 return scrollRange
+            }
+
+            override fun canScrollVertically(): Boolean {
+                return !shouldUsePagination
             }
         }
 
         binding.recyclerView.layoutManager = linearLayoutManager
         binding.recyclerView.adapter = adapter
-        binding.recyclerView.addOnScrollListener(getRecyclerViewOnScrollListener())
         binding.recyclerView.itemAnimator = null
-        if (requireContext().isEinkDisplay().not())
+
+        if (shouldUsePagination) {
+            binding.recyclerView.layoutAnimation = null
+            binding.recyclerView.overScrollMode = View.OVER_SCROLL_NEVER
+            binding.recyclerView.addOnItemTouchListener(object : RecyclerView.SimpleOnItemTouchListener() {
+                override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
+                    gestureDetector.onTouchEvent(e)
+                    return false
+                }
+            })
+        } else {
             binding.recyclerView.layoutAnimation =
                 AnimationUtils.loadLayoutAnimation(requireContext(), R.anim.layout_anim_from_bottom)
+            binding.recyclerView.addOnScrollListener(getRecyclerViewOnScrollListener())
+        }
+    }
+
+    private fun initGestureDetector() {
+        gestureDetector = GestureDetector(requireContext(), object : GestureDetector.SimpleOnGestureListener() {
+            private val SWIPE_THRESHOLD = 30
+            private val SWIPE_VELOCITY_THRESHOLD = 30
+
+            override fun onDown(e: MotionEvent): Boolean {
+                return true
+            }
+
+            override fun onScroll(
+                e1: MotionEvent?,
+                e2: MotionEvent,
+                distanceX: Float,
+                distanceY: Float
+            ): Boolean {
+                return false
+            }
+
+            override fun onFling(
+                e1: MotionEvent?,
+                e2: MotionEvent,
+                velocityX: Float,
+                velocityY: Float
+            ): Boolean {
+                if (e1 == null) return false
+                val diffY = e2.y - e1.y
+                val diffX = e2.x - e1.x
+
+                if (Math.abs(diffY) > Math.abs(diffX)) {
+                    if (Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
+                        val baseAppsPerPage = 7
+                        val minTextSize = Constants.TextSize.ONE
+                        val maxTextSize = Constants.TextSize.SEVEN
+
+                        val appsPerPage = (baseAppsPerPage + 2 - (prefs.textSizeScale - minTextSize) / (maxTextSize - minTextSize) * 3).toInt().coerceAtLeast(1)
+
+                        val currentPosition = linearLayoutManager.findFirstVisibleItemPosition()
+
+                        if (diffY > 0) {
+                            val targetPosition = (currentPosition - appsPerPage).coerceAtLeast(0)
+                            linearLayoutManager.scrollToPositionWithOffset(targetPosition, 0)
+                        } else {
+                            val targetPosition = (currentPosition + appsPerPage).coerceAtMost(adapter.itemCount - 1)
+                            linearLayoutManager.scrollToPositionWithOffset(targetPosition, 0)
+                        }
+                        return true
+                    }
+                }
+                return false
+            }
+        })
     }
 
     private fun initObservers() {
@@ -256,8 +335,7 @@ class AppDrawerFragment : Fragment() {
                         if (!recyclerView.canScrollVertically(1))
                             binding.search.hideKeyboard()
                         else if (!recyclerView.canScrollVertically(-1))
-                            if (!onTop && isRemoving.not())
-                                binding.search.showKeyboard(prefs.autoShowKeyboard)
+                           Unit
                     }
                 }
             }

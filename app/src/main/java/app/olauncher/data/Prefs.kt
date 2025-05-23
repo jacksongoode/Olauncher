@@ -88,8 +88,18 @@ class Prefs(context: Context) {
     private val CALENDAR_APP_PACKAGE = "CALENDAR_APP_PACKAGE"
     private val CALENDAR_APP_USER = "CALENDAR_APP_USER"
     private val CALENDAR_APP_CLASS_NAME = "CALENDAR_APP_CLASS_NAME"
+    private val EINK_MODE_OPTIMIZATION_KEY = "EINK_MODE_OPTIMIZATION_KEY"
+    private val BOLD_TEXT_KEY = "BOLD_TEXT_KEY"
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_FILENAME, 0);
+
+    var einkModeOptimization: Boolean
+        get() = prefs.getBoolean(EINK_MODE_OPTIMIZATION_KEY, false)
+        set(value) = prefs.edit().putBoolean(EINK_MODE_OPTIMIZATION_KEY, value).apply()
+
+    var boldText: Boolean
+        get() = prefs.getBoolean(BOLD_TEXT_KEY, false)
+        set(value) = prefs.edit().putBoolean(BOLD_TEXT_KEY, value).apply()
 
     var firstOpen: Boolean
         get() = prefs.getBoolean(FIRST_OPEN, true)

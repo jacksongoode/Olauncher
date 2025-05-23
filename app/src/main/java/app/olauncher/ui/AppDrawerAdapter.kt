@@ -1,6 +1,7 @@
 package app.olauncher.ui
 
 import android.content.Context
+import android.graphics.Typeface
 import android.os.UserHandle
 import android.text.Editable
 import android.text.TextWatcher
@@ -17,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView
 import app.olauncher.R
 import app.olauncher.data.AppModel
 import app.olauncher.data.Constants
+import app.olauncher.data.Prefs
 import app.olauncher.databinding.AdapterAppDrawerBinding
 import app.olauncher.helper.hideKeyboard
 import app.olauncher.helper.isSystemApp
@@ -63,6 +65,7 @@ class AppDrawerAdapter(
                 appLabelGravity,
                 myUserHandle,
                 appModel,
+                Prefs(holder.itemView.context), // Pass Prefs instance
                 appClickListener,
                 appDeleteListener,
                 appInfoListener,
@@ -148,6 +151,7 @@ class AppDrawerAdapter(
             appLabelGravity: Int,
             myUserHandle: UserHandle,
             appModel: AppModel,
+            prefs: Prefs,
             clickListener: (AppModel) -> Unit,
             appDeleteListener: (AppModel) -> Unit,
             appInfoListener: (AppModel) -> Unit,
@@ -160,6 +164,11 @@ class AppDrawerAdapter(
                 appTitle.visibility = View.VISIBLE
                 appTitle.text = appModel.appLabel + if (appModel.isNew == true) " ✦" else ""
                 appTitle.gravity = appLabelGravity
+                if (prefs.boldText) {
+                    appTitle.typeface = Typeface.DEFAULT_BOLD
+                } else {
+                    appTitle.typeface = Typeface.DEFAULT
+                }
                 otherProfileIndicator.isVisible = appModel.user != myUserHandle
 
                 appTitle.setOnClickListener { clickListener(appModel) }

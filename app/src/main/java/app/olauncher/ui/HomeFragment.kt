@@ -4,6 +4,7 @@ import android.app.admin.DevicePolicyManager
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.Typeface
 import android.os.BatteryManager
 import android.os.Build
 import android.os.Bundle
@@ -350,9 +351,16 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     private fun setHomeAppText(textView: TextView, appName: String, packageName: String, userString: String): Boolean {
         if (isPackageInstalled(requireContext(), packageName, userString)) {
             textView.text = appName
+            if (prefs.boldText) {
+                textView.typeface = Typeface.DEFAULT_BOLD
+            } else {
+                textView.typeface = Typeface.DEFAULT
+            }
             return true
         }
         textView.text = ""
+        // Reset typeface if app is not installed or name is empty
+        textView.typeface = Typeface.DEFAULT
         return false
     }
 
