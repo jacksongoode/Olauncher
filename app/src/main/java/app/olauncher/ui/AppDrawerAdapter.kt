@@ -23,6 +23,7 @@ import app.olauncher.databinding.AdapterAppDrawerBinding
 import app.olauncher.helper.hideKeyboard
 import app.olauncher.helper.isSystemApp
 import app.olauncher.helper.showKeyboard
+import app.olauncher.helper.applyFontWeightStyle
 import java.text.Normalizer
 
 class AppDrawerAdapter(
@@ -164,11 +165,7 @@ class AppDrawerAdapter(
                 appTitle.visibility = View.VISIBLE
                 appTitle.text = appModel.appLabel + if (appModel.isNew == true) " ✦" else ""
                 appTitle.gravity = appLabelGravity
-                if (prefs.boldText) {
-                    appTitle.typeface = Typeface.DEFAULT_BOLD
-                } else {
-                    appTitle.typeface = Typeface.DEFAULT
-                }
+                appTitle.applyFontWeightStyle(prefs.boldText)
                 otherProfileIndicator.isVisible = appModel.user != myUserHandle
 
                 appTitle.setOnClickListener { clickListener(appModel) }

@@ -43,6 +43,8 @@ import app.olauncher.helper.openDialerApp
 import app.olauncher.helper.openSearch
 import app.olauncher.helper.setPlainWallpaperByTheme
 import app.olauncher.helper.showToast
+import app.olauncher.helper.applyFontWeightStyle
+import app.olauncher.helper.applyClockFontWeightStyle
 import app.olauncher.listener.OnSwipeTouchListener
 import app.olauncher.listener.ViewSwipeTouchListener
 import java.text.SimpleDateFormat
@@ -242,6 +244,9 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         binding.clock.isVisible = Constants.DateTime.isTimeVisible(prefs.dateTimeVisibility)
         binding.date.isVisible = Constants.DateTime.isDateVisible(prefs.dateTimeVisibility)
 
+        binding.clock.applyFontWeightStyle(prefs.boldText)
+        binding.date.applyClockFontWeightStyle(prefs.boldText)
+
 //        var dateText = SimpleDateFormat("EEE, d MMM", Locale.getDefault()).format(Date())
         val dateFormat = SimpleDateFormat("EEE, d MMM", Locale.getDefault())
         var dateText = dateFormat.format(Date())
@@ -261,6 +266,7 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
 
         viewModel.getTodaysScreenTime()
         binding.tvScreenTime.visibility = View.VISIBLE
+        binding.tvScreenTime.applyFontWeightStyle(prefs.boldText)
 
         val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
         val horizontalMargin = if (isLandscape) 64.dpToPx() else 10.dpToPx()
@@ -351,16 +357,12 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     private fun setHomeAppText(textView: TextView, appName: String, packageName: String, userString: String): Boolean {
         if (isPackageInstalled(requireContext(), packageName, userString)) {
             textView.text = appName
-            if (prefs.boldText) {
-                textView.typeface = Typeface.DEFAULT_BOLD
-            } else {
-                textView.typeface = Typeface.DEFAULT
-            }
+            textView.applyFontWeightStyle(prefs.boldText)
             return true
         }
         textView.text = ""
         // Reset typeface if app is not installed or name is empty
-        textView.typeface = Typeface.DEFAULT
+        textView.applyFontWeightStyle(false) // Ensure normal weight here too
         return false
     }
 

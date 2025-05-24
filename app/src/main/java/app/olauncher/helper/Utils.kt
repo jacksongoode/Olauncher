@@ -17,6 +17,7 @@ import android.graphics.Canvas
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Point
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.UserHandle
@@ -31,6 +32,7 @@ import android.util.TypedValue
 import android.view.View
 import android.view.WindowManager
 import android.view.animation.LinearInterpolator
+import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
@@ -509,4 +511,24 @@ fun Context.rateApp() {
     flags = flags or Intent.FLAG_ACTIVITY_NEW_DOCUMENT
     intent.addFlags(flags)
     startActivity(intent)
+}
+
+fun TextView.applyFontWeightStyle(isBold: Boolean) {
+    if (isBold) {
+        this.typeface = Typeface.DEFAULT
+    }
+}
+
+fun TextView.applyClockFontWeightStyle(isBold: Boolean) {
+    if (isBold) {
+        this.typeface = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            try {
+                Typeface.create(Typeface.DEFAULT, 600, false)
+            } catch (e: Exception) {
+                Typeface.DEFAULT_BOLD
+            }
+        } else {
+            Typeface.DEFAULT_BOLD
+        }
+    }
 }
